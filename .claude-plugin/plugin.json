@@ -1,0 +1,9 @@
+{
+  "name": "vultr-freqtrade-live",
+  "description": "Run a backtested crypto strategy as a freqtrade bot on a Vultr VPS: console hardening, agent SSH hand-off, Docker backtest, ledger parity, live cutover, operations.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Henry Han"
+  },
+  "license": "MIT"
+}

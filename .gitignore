@@ -1,0 +1,8 @@
+# never commit secrets or a real trade DB
+**/config-live-private.json
+**/config-api-private.json
+**/*.sqlite
+**/known_hosts
+**/backtest_results/
+__pycache__/
+.DS_Store

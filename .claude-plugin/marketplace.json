@@ -1,0 +1,13 @@
+{
+  "name": "vultr-freqtrade-live",
+  "owner": {
+    "name": "Henry Han"
+  },
+  "plugins": [
+    {
+      "name": "vultr-freqtrade-live",
+      "source": "./",
+      "description": "Run a backtested crypto strategy as a freqtrade bot on a Vultr VPS: console hardening, agent SSH hand-off, Docker backtest, ledger parity, live cutover, operations."
+    }
+  ]
+}

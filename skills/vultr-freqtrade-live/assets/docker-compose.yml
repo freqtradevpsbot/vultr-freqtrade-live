@@ -1,0 +1,10 @@
+services:
+  freqtrade:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade-bot
+    volumes:
+      - ./user_data:/freqtrade/user_data
+    # Backtest-only by construction: this default command runs nothing that trades.
+    # run_backtest.sh overrides it per invocation; docker-compose.live.yml replaces it
+    # with `trade` and is only ever passed explicitly with -f.
+    command: list-strategies

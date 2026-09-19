@@ -1,0 +1,6 @@
+{
+  "exchange": {
+    "key": "PASTE_EXCHANGE_API_KEY_HERE",
+    "secret": "PASTE_EXCHANGE_SECRET_KEY_HERE"
+  }
+}

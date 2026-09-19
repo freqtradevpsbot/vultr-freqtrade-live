@@ -1,0 +1,16 @@
+# Live overlay. Always used together with the base file:
+#   docker compose -f docker-compose.yml -f docker-compose.live.yml up -d
+# Nothing here publishes a port: the API server in config-api-private.json binds to
+# 127.0.0.1 inside the container and is driven with `docker exec … freqtrade-client`.
+services:
+  freqtrade:
+    restart: unless-stopped
+    command: >
+      trade
+      --logfile /freqtrade/user_data/logs/freqtrade-live.log
+      --db-url sqlite:////freqtrade/user_data/tradesv3.live.sqlite
+      --config /freqtrade/user_data/config.json
+      --config /freqtrade/user_data/config-live.json
+      --config /freqtrade/user_data/config-live-private.json
+      --config /freqtrade/user_data/config-api-private.json
+      --strategy EmaCrossStopLock
