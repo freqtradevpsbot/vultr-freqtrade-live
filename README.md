@@ -40,17 +40,17 @@ on a different end date.
 Codex / ChatGPT desktop — ask the agent, which uses its built-in `skill-installer`:
 
 ```
-$skill-installer install the skill at https://github.com/<owner>/vultr-freqtrade-live/tree/main/skills/vultr-freqtrade-live
+$skill-installer install the skill at https://github.com/freqtradevpsbot/vultr-freqtrade-live/tree/main/skills/vultr-freqtrade-live
 ```
 
 Any agent, via the [skills.sh](https://skills.sh) CLI:
 
 ```
-npx skills add https://github.com/<owner>/vultr-freqtrade-live --skill vultr-freqtrade-live
+npx skills add https://github.com/freqtradevpsbot/vultr-freqtrade-live --skill vultr-freqtrade-live
 ```
 
 Claude Code: copy `skills/vultr-freqtrade-live` into `~/.claude/skills/` (verified), or add
-the repo as a plugin marketplace — `/plugin marketplace add <owner>/vultr-freqtrade-live` —
+the repo as a plugin marketplace — `/plugin marketplace add freqtradevpsbot/vultr-freqtrade-live` —
 which uses the manifests under `.claude-plugin/` (present, not yet exercised).
 
 ## Layout

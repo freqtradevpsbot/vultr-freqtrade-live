@@ -1,7 +1,7 @@
 {
   "name": "vultr-freqtrade-live",
   "owner": {
-    "name": "Henry Han"
+    "name": "freqtradevpsbot"
   },
   "plugins": [
     {
