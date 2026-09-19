@@ -16,7 +16,9 @@ docker --version && docker compose version
 
 Ubuntu's own packages were enough (Docker 29.x, Compose 2.40). The docker group takes effect on
 the next login; commands in the same session still work through `sudo` or a fresh SSH session.
-Swap: Vultr's image already carries ~2.3 GB (`swapon --show`); do not add another.
+Swap: run `swapon --show` before adding any — the tested Vultr image came with ~2.3 GB, which
+is an observation about that image, not a guarantee. If it prints nothing, create a 2 GB
+swapfile before running freqtrade on 1 GB.
 
 ## Upload the bundle
 
@@ -64,6 +66,8 @@ docker compose run --rm freqtrade backtesting \
   --enable-protections --cache none --export trades --breakdown year
 ```
 
+- The ranges above (and the defaults in the two scripts) are the values that were verified, not
+  values to keep: set `DATA_RANGE` and `TEST_RANGE` to the person's data and today's date.
 - `--enable-protections` — without it the post-stop lock never runs and the run still
   "succeeds". Check `locks` in the result (one lock per losing stop is what a working guard
   looks like).
@@ -87,6 +91,8 @@ into the CSV the parity step compares.
 
 `profit_total` and `final_balance` are the all-in compounding result of `stake_amount:
 "unlimited"` × `tradable_balance_ratio`; `market_change` is buy-and-hold over the same range;
-`wallet_stats.max_drawdown` is the account drawdown, `max_drawdown_account` the closed-trade one.
-None of these compare to a backtester with a different sizing rule or a different span — the
-ledger does. Say which span and which sizing every number came from.
+`wallet_stats.max_drawdown_account` is the drawdown of the marked-to-market wallet (the number
+most people mean by drawdown), while the top-level `max_drawdown_account` is measured on closed
+trades only — on the verified run 24.3% against 16.2%, so name which one you quote. None of
+these compare to a backtester with a different sizing rule or a different span — the ledger
+does. Say which span and which sizing every number came from.

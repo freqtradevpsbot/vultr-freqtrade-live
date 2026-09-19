@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.freqtrade.io/schema.json",
+  "dry_run": true,
+  "dry_run_wallet": 1000,
+  "initial_state": "running",
+  "stake_amount": "unlimited",
+  "tradable_balance_ratio": 0.5,
+  "force_entry_enable": false,
+  "cancel_open_orders_on_exit": false,
+  "order_types": {
+    "entry": "market",
+    "exit": "market",
+    "emergency_exit": "market",
+    "force_entry": "market",
+    "force_exit": "market",
+    "stoploss": "limit",
+    "stoploss_on_exchange": true,
+    "stoploss_on_exchange_interval": 60,
+    "stoploss_on_exchange_limit_ratio": 0.99
+  }
+}

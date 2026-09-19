@@ -49,19 +49,27 @@ recorded in the answer ("dry-run skipped at the user's request").
 5. **Ledger parity** — [references/ledger-parity.md](references/ledger-parity.md). Compare every
    trade's open/close date, rates, exit reason and profit ratio against the original backtest.
    Totals can agree by accident; ledgers cannot. Go live only when they match.
-6. **Dry-run, then live** — [references/live-cutover.md](references/live-cutover.md). Dry-run is
-   the default first step. Live is a config overlay plus a secrets file the person types; the
-   bot starts `stopped` so authentication is proven with no order possible; the startup state
-   is computed from the last closed candle and the person chooses wait or force-enter.
+6. **Dry-run, then live** — [references/live-cutover.md](references/live-cutover.md). Dry-run
+   runs first, on its own overlay and database, before any exchange key exists. Live is a
+   config overlay copied from an example the person fills in, plus a secrets file the person
+   types; the bot starts `stopped` so authentication is proven with no order possible; the
+   startup state is read off a backtest through the last closed candle (a trade force-closed at
+   the range end means "in position") and the person chooses wait or force-enter.
 7. **Operate** — [references/operations.md](references/operations.md). Restart policy, backups
    (the trade DB is the bot's memory of the position), IP changes, image updates, and how to
    change parameters while holding a position.
 
 ## Hard rules
 
-- **Backtest bundle first, live overlay later.** The base config keeps `dry_run: true` and empty
-  exchange keys; live is a second config file merged on top, plus a private file that is
-  git-ignored and mode 600. One compose file for backtests, an overlay for `trade`.
+- **Backtest bundle first, then the dry overlay, then the live overlay.** The base config keeps
+  `dry_run: true` and empty exchange keys; dry-run and live are second config files merged on
+  top, plus a private secrets file that is git-ignored and mode 600. The live overlay ships only
+  as an `.example` whose stake is a placeholder — the person's number goes in, never a default.
+- **Pin the image.** `freqtradeorg/freqtrade:<release>` as verified, never `stable`; updating is a
+  changelog read, a backtest on the new tag, and a swap while flat.
+- **Market-order strategies leave `cancel_open_orders_on_exit` false.** Their only open order is
+  the exchange stop; `true` would protect nothing and may take the stop down on every graceful
+  stop until the bot is back and running.
 - **Nothing listens on a public port.** FreqUI and the REST API bind to 127.0.0.1 inside the
   container with generated credentials; the person reaches them through an SSH tunnel if at all.
 - **The first live start is `initial_state: stopped`.** It proves the API key, the balance
@@ -94,18 +102,29 @@ recorded in the answer ("dry-run skipped at the user's request").
   SSH steps run as escalated commands the platform's reviewer approves one by one. Keep a
   project-local `known_hosts`; the person's own file is unreadable from the sandbox.
 - On a 1 GB instance run one freqtrade command at a time; an `--timeframe-detail 1h` backtest
-  over eight years fits, a hyperopt does not. Vultr's Ubuntu image already has a 2.3 GB swap.
+  over eight years fits, a hyperopt does not. Check `swapon --show` first — the tested Vultr
+  Ubuntu image came with a 2.3 GB swap, which is not a promise about every image.
+- A backtest never leaves a trade open: whatever is still held at the range end is force-closed
+  and recorded with `exit_reason: force_exit` on `backtest_end`. That row is how the startup
+  state is read — not the absence of an exit.
+- In dry-run the wallet is `dry_run_wallet`, not the account, and an exchange stop is "assumed
+  filled" rather than placed. Dry-run proves plumbing and signals; the `stopped` live start
+  proves the key, the balance and the stop order.
 - Vultr's console moved SSH keys under **Orchestration → SSH Keys** (older UI: Account → SSH
   Keys). The deploy page shows an empty SSH Keys list until one is registered and the page is
   refreshed.
-- `stake_amount: "unlimited"` with `tradable_balance_ratio` uses that share of the FREE stake
-  currency at each entry — it compounds. `0.995` leaves room for the entry fee; `1.0` fails.
+- `stake_amount: "unlimited"` with `tradable_balance_ratio` spends that share of the account's
+  stake-currency balance (the docs say total balance, not free) at each entry — it compounds.
+  In a backtest `0.995` leaves room for the entry fee; `1.0` fails.
 
 ## What is in this folder
 
-- `assets/` — the file set that ran: backtest compose + live overlay, base config + live overlay
-  + private-file example, a strategy template with a post-stop lock, the two backtest scripts.
-- `scripts/` — `extract-trades.py` (freqtrade result zip → CSV for parity), `make-api-config.sh`
-  (localhost-only API credentials generated on the server), `vps-preflight.sh` (restart policy,
-  unattended-upgrade reboot setting, reboot-required, uptime).
+- `assets/` — the file set that ran, pinned to the verified image: backtest compose + dry and
+  live overlays, base config + dry overlay + live overlay **example** + secrets-file example, a
+  strategy template with a post-stop lock, the two backtest scripts.
+- `scripts/` — `extract-trades.py` (result zip → CSV for parity; prints the last trade beside
+  `backtest_end`), `make-api-config.sh` (localhost-only API credentials generated on the
+  server), `backup-db.sh` (consistent copy of the live DB through SQLite's backup API),
+  `vps-preflight.sh` (restart policy, unattended-upgrade reboot setting, reboot-required,
+  uptime, non-loopback listeners).
 - `references/` — one document per phase, with the exact commands that were verified.

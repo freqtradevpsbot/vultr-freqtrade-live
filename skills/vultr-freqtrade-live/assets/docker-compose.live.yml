@@ -14,3 +14,8 @@ services:
       --config /freqtrade/user_data/config-live-private.json
       --config /freqtrade/user_data/config-api-private.json
       --strategy EmaCrossStopLock
+    # Optional FreqUI through an SSH tunnel (references/live-cutover.md, "Optional: FreqUI"):
+    # set listen_ip_address to 0.0.0.0 in config-api-private.json and uncomment the two lines
+    # below. The host-side 127.0.0.1 keeps it off the public interface; "8080:8080" would not.
+    # ports:
+    #   - "127.0.0.1:8080:8080"

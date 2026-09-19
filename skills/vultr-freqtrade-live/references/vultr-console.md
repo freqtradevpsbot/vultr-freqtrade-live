@@ -8,7 +8,10 @@ guides, checks screenshots when offered, and never asks for the account password
 - **Products → Compute → Deploy.** Type `Shared CPU`, plan `Cloud Compute`. For one pair on a
   daily timeframe, **1 vCPU / 1 GB / 25 GB / 1 TB** is enough (verified: daily + 1-hour-detail
   backtests over eight years, one at a time). Pick 2 GB for several pairs or hyperopt.
-- Location: nearest to the person; latency is irrelevant on a daily strategy.
+- Location: a region from which the exchange allows API access — Binance blocks several server
+  countries (freqtrade's exchange notes name Canada, Malaysia, the Netherlands and the United
+  States as a non-exhaustive list; US accounts use the `binanceus` exchange id). Within the
+  allowed regions, nearest is fine; latency is irrelevant on a daily strategy.
 - **Software: plain `Ubuntu 24.04 LTS x64`.** Not a marketplace Docker or freqtrade image.
 - Hostname/label: something like `freqtrade-btc-01`.
 - Automatic backups: off is fine while testing; **on before going live** (about 20% of the
@@ -62,8 +65,10 @@ user has passwordless sudo, so treat the key as root and protect it accordingly.
 | Note | e.g. `home PC` |
 
 The pre-existing, uneditable **drop** rules for IPv4 and IPv6 are the default deny; leave them.
-Do not open 8080 (FreqUI/API): the person reaches those through an SSH tunnel
-(`ssh -L 8080:127.0.0.1:8080 linuxuser@<VPS_IP>`) if they want them at all. Refresh the deploy
+Do not open 8080 (FreqUI/API). By default the API lives inside the container and is reached
+with `docker exec`; if the person wants FreqUI, the optional set-up in
+[live-cutover.md](live-cutover.md) publishes it on the host's loopback only and an SSH tunnel
+carries it — still nothing on the public interface. Refresh the deploy
 page and pick the group in the Firewall Group field; linking happens at deploy.
 
 When the person's ISP changes their public IP, only SSH is cut; the bot keeps running. Fix: edit

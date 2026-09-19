@@ -1,4 +1,4 @@
-"""EMA crossover with a fixed stop and a post-stop lock — a freqtrade port template.
+"""EMA crossover with a fixed stop and a post-stop lock: a freqtrade port template.
 
 Rules (change the three numbers and the indicator lines; keep the rest):
 - Enter long when EMA(fast) crosses above EMA(slow) on a closed candle with volume.

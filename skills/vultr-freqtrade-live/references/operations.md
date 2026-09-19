@@ -2,52 +2,67 @@
 
 ## What survives what
 
-| Event | Exchange stop order | Bot DB (position memory) | EMA exit / new entries |
+| Event | Exchange stop order | Bot DB (memory of the position) | Signal exits / new entries |
 |---|---|---|---|
-| Container restart (`unless-stopped`) | stays on the exchange | on disk, reloaded | resume only if `initial_state: running` |
-| VPS reboot (maintenance, kernel update) | stays | on disk, reloaded | same |
-| VPS destroyed / disk lost | stays | **gone** — the bot no longer knows it holds the coin | nothing manages the position |
-| Person's home IP changes | unaffected | unaffected | unaffected; only SSH is cut |
+| Graceful stop: `down`, recreate, image update, VPS shutdown | Stays with `cancel_open_orders_on_exit: false`. With `true` it may be cancelled and is re-placed only once the bot is back **and** `RUNNING` | On disk, reloaded | Resume only when running (`initial_state: running`, or `/start`) |
+| Crash, power loss, kernel panic | Stays | On disk, last committed state | Same |
+| VPS destroyed or disk lost | Stays | **Gone** — the bot no longer knows it holds the coin | Nothing manages the position |
+| Person's home IP changes | Unaffected | Unaffected | Unaffected; only SSH is cut |
 
-So the two things worth protecting are the exchange stop (already there) and the trade DB.
+Two things are worth protecting: the exchange stop (keep the option `false`, see
+[live-cutover.md](live-cutover.md)) and the trade DB.
 
 ## Backups
 
-Either turn on Vultr automatic backups (about 20% of the plan price) or copy the live DB and the
-configs off the box on a schedule:
+Do not `scp` the live `.sqlite` file itself — the bot can be mid-transaction, and a copy of the
+main file without its journal is not a consistent database. `scripts/backup-db.sh` makes a
+consistent snapshot through SQLite's online backup API (python3's `sqlite3` module, present on
+Ubuntu), runs `PRAGMA integrity_check`, and prints the file to fetch:
+
+```bash
+cd ~/freqtrade_vps && ./backup-db.sh          # → backups/tradesv3.live.<stamp>.sqlite
+```
 
 ```powershell
 scp -o BatchMode=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=<project>\vultr_known_hosts" `
-    linuxuser@<VPS_IP>:/home/linuxuser/freqtrade_vps/user_data/tradesv3.live.sqlite <project>\backup\
+    linuxuser@<VPS_IP>:/home/linuxuser/freqtrade_vps/backups/tradesv3.live.<stamp>.sqlite <project>\backup\
 ```
 
-Copy the SQLite while the bot is idle between candles; a daily strategy has 23 quiet hours.
+Also copy the three config files the person edited. Vultr's automatic backups (about 20% of the
+plan price) cover the whole disk and are the simpler answer when the person accepts the cost;
+turn them on before going live if so.
 
 ## Preflight after any change
 
 `scripts/vps-preflight.sh` prints: Docker enabled at boot, the container's restart policy,
 whether unattended-upgrades is on and whether it is allowed to reboot, whether a reboot is
-pending, boot time and recent reboots. Verified defaults on Vultr's Ubuntu 24.04: Docker
-enabled, unattended-upgrades enabled, **automatic reboot not configured** (so security updates
-do not restart the box on their own).
+pending, boot time and recent reboots, memory and disk, and anything listening on a non-loopback
+address (expected: nothing but sshd). Verified defaults on Vultr's Ubuntu 24.04: Docker
+enabled, unattended-upgrades enabled, **automatic reboot not configured** (security updates do
+not restart the box on their own).
 
 ## Reading the bot
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.live.yml logs -f --no-color freqtrade
-docker exec <container> freqtrade-client --config /freqtrade/user_data/config-api-private.json status
-docker exec <container> freqtrade-client --config /freqtrade/user_data/config-api-private.json balance
+docker exec freqtrade-bot freqtrade-client --config /freqtrade/user_data/config-api-private.json status
+docker exec freqtrade-bot freqtrade-client --config /freqtrade/user_data/config-api-private.json balance
 ```
 
 Daily habit for the person: bot status, the open orders page on the exchange (the stop must be
-there), free balance drift. Errors to know by name: `Insufficient balance` (sizing vs fee
+there), free balance drift. Errors to know by name: `Insufficient balance` (sizing versus fee
 headroom), listen-key / websocket reconnects (harmless if they recover), rate limits.
 
 ## Updating the image
 
-`docker compose pull` then `up -d` recreates the container. Do it while flat, or after the
-`cancel_open_orders_on_exit` question in [live-cutover.md](live-cutover.md) is settled, because
-a recreate is a graceful stop.
+The compose file pins a release tag. Updating is a procedure, not a `pull`:
+
+1. Read the release notes for every version between the pinned tag and the target.
+2. Change the tag in `docker-compose.yml`, run the backtest with it, and compare the ledger with
+   the run on the old tag (`scripts/extract-trades.py` twice). A changed ledger is a changed
+   engine; decide whether the difference is acceptable before the bot runs on it.
+3. Swap the live container (`up -d` recreates it) **while flat**, or at least with
+   `cancel_open_orders_on_exit: false` confirmed, because a recreate is a graceful stop.
 
 ## Changing parameters while a position is open
 

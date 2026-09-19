@@ -6,7 +6,9 @@ strategy to a [freqtrade](https://www.freqtrade.io/) bot running in Docker on a
 agent that reads `SKILL.md`) doing the server work while the person keeps every secret and
 every money decision.
 
-It is an operations runbook. It contains no strategy, no signal and no claim about returns.
+It is an operations runbook. The one strategy file in it is a port template — an EMA crossover
+with a fixed stop and a post-stop lock — kept so the commands have something to run; it is not a
+recommendation, and nothing here is a signal or a claim about returns.
 
 ## What it covers
 
@@ -57,8 +59,8 @@ which uses the manifests under `.claude-plugin/` (present, not yet exercised).
 skills/vultr-freqtrade-live/
   SKILL.md                 the workflow, roles, hard rules, verified gotchas
   references/              one document per phase
-  assets/                  the compose files, configs, strategy template, backtest scripts that ran
-  scripts/                 extract-trades.py · make-api-config.sh · vps-preflight.sh
+  assets/                  compose (backtest, dry, live), configs, strategy template, backtest scripts — pinned to the verified image
+  scripts/                 extract-trades.py · make-api-config.sh · backup-db.sh · vps-preflight.sh
 ```
 
 ## Disclaimer

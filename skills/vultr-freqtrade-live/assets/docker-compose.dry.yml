@@ -1,0 +1,15 @@
+# Dry-run overlay. Used together with the base file, and BEFORE any live file exists:
+#   docker compose -f docker-compose.yml -f docker-compose.dry.yml up -d
+# Same strategy, same order types, a simulated wallet, its own database. No exchange key is
+# needed. Stop it with `down` before starting the live overlay (same container name).
+services:
+  freqtrade:
+    restart: unless-stopped
+    command: >
+      trade
+      --logfile /freqtrade/user_data/logs/freqtrade-dryrun.log
+      --db-url sqlite:////freqtrade/user_data/tradesv3.dryrun.sqlite
+      --config /freqtrade/user_data/config.json
+      --config /freqtrade/user_data/config-dry.json
+      --config /freqtrade/user_data/config-api-private.json
+      --strategy EmaCrossStopLock

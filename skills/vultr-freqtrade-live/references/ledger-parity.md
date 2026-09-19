@@ -1,8 +1,9 @@
 # Ledger parity — the gate before live
 
 Two engines that agree on total return can disagree on every trade; two engines that agree on
-every trade agree on everything. Compare ledgers, not totals, and do it before an exchange key
-exists anywhere.
+every trade agree on what a port has to get right — the signals and the fill semantics.
+(Amounts, the fee currency, lot rounding and the equity curve between trades can still differ.)
+Compare ledgers, not totals, and do it before an exchange key exists anywhere.
 
 ## What to compare, per trade
 

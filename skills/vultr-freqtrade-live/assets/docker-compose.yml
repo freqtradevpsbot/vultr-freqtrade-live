@@ -1,10 +1,13 @@
 services:
   freqtrade:
-    image: freqtradeorg/freqtrade:stable
+    # Pinned to the release the runbook was verified on. `stable` moves every month and would
+    # silently change fills, result format and exchange behaviour under a validated setup.
+    # Updating is a procedure (references/operations.md), not a pull.
+    image: freqtradeorg/freqtrade:2026.8
     container_name: freqtrade-bot
     volumes:
       - ./user_data:/freqtrade/user_data
     # Backtest-only by construction: this default command runs nothing that trades.
-    # run_backtest.sh overrides it per invocation; docker-compose.live.yml replaces it
-    # with `trade` and is only ever passed explicitly with -f.
+    # run_backtest.sh overrides it per invocation; the dry and live overlays replace it
+    # with `trade` and are only ever passed explicitly with -f.
     command: list-strategies

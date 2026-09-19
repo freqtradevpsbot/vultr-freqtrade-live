@@ -55,6 +55,17 @@ def main() -> None:
         f"final balance {result.get('final_balance')}, "
         f"range {result.get('backtest_start')} -> {result.get('backtest_end')} -> {out_path}"
     )
+    # The startup-state read (references/live-cutover.md, step 6): a trade force-closed exactly
+    # at backtest_end means the strategy was still in position at the last closed candle.
+    if trades:
+        last = trades[-1]
+        held = last.get("exit_reason") == "force_exit" and str(last.get("close_date", "")).startswith(
+            str(result.get("backtest_end", ""))[:10]
+        )
+        print(
+            f"last trade: {last.get('open_date')} -> {last.get('close_date')} "
+            f"{last.get('exit_reason')} -> {'IN POSITION at range end' if held else 'flat at range end'}"
+        )
 
 
 if __name__ == "__main__":

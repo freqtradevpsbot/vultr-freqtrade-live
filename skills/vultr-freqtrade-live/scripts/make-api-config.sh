@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Write user_data/config-api-private.json on the VPS with random credentials for an API
 # server that listens on 127.0.0.1 only. Run it on the server (openssl is present on Ubuntu);
-# it refuses to overwrite an existing file. Nothing here is published on a host port —
+# it refuses to overwrite an existing file. Nothing here is published on a host port:
 # docker-compose.live.yml maps no ports, and the agent talks to the bot with
 #   docker exec <container> freqtrade-client --config /freqtrade/user_data/config-api-private.json <cmd>
 set -euo pipefail

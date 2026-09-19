@@ -17,12 +17,12 @@ Replace the indicator lines and keep everything else.
 | Fill model | `order_types` entry/exit `market`, signals on closed candles | Fills at the **next candle's open**; a backtester that fills on the signal candle's close shifts every trade by one bar |
 | Stop | `stoploss = -0.05` (fraction of entry) | Freqtrade evaluates the stop against the candle's low and fills at the stop price; intrabar order is assumed. `--timeframe-detail 1h` tightens this |
 | Fees | `--fee 0.001` on the CLI, `fee_open/fee_close` in results | 0.1% each way makes a −5% stop show as ≈ −5.19% |
-| Take-profit | `minimal_roi = {}` | **Freqtrade's default ROI table adds exits your original never had.** Set it empty unless the original has one |
+| Take-profit | `minimal_roi = {}` | Left unset, freqtrade's default is `{"0": 10}` — a 1000% target that never fires; but a strategy generated from freqtrade's template carries an active ROI table that adds exits the original never had. `{}` states the intent either way |
 | Trailing | `trailing_stop = False` | Default is off, say so explicitly |
 | Exit signal | `use_exit_signal = True`, `exit_profit_only = False` | Otherwise crossover exits are ignored |
 | Post-stop lock | `protections` → `StoplossGuard` with `lookback_period_candles: 1`, `trade_limit: 1`, `stop_duration_candles: N`, `only_per_pair: True`, `required_profit: 0.0` | Locks the pair's entries for N candles after one losing stop. **Backtests need `--enable-protections`** or it is silently off |
 | Warm-up | `startup_candle_count` ≥ longest indicator (with margin) and a download `--timerange` that starts earlier than the backtest | Otherwise the first weeks of signals are missing or shifted |
-| Position size | `stake_amount: "unlimited"`, `tradable_balance_ratio: 0.995`, `max_open_trades: 1` | All-in compounding; `1.0` leaves nothing for the entry fee and the order is rejected |
+| Position size | `stake_amount: "unlimited"`, `tradable_balance_ratio: 0.995`, `max_open_trades: 1` | All-in compounding on the account's stake-currency balance (the ratio is of the total balance); `1.0` leaves nothing for the entry fee and the order is rejected |
 | Candle validity | `& (dataframe["volume"] > 0)` in entry/exit | Matches backtesters that skip zero-volume candles |
 | Direction | `can_short = False` | Spot is long-only |
 | Re-entry after lock | crossover, not level | `crossed_above` fires only on the crossing candle; a rule that re-enters whenever fast > slow is a different strategy |
