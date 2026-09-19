@@ -107,6 +107,10 @@ recorded in the answer ("dry-run skipped at the user's request").
 - A backtest never leaves a trade open: whatever is still held at the range end is force-closed
   and recorded with `exit_reason: force_exit` on `backtest_end`. That row is how the startup
   state is read — not the absence of an exit.
+- `freqtrade-client … reload_config` applies a config-file change to a running bot without
+  recreating the container (state goes `RELOAD_CONFIG` → `RUNNING` in seconds). On 2026.8 it
+  left the exchange stop order in place even with `cancel_open_orders_on_exit: true` (measured
+  while holding); what a full container stop does to that order is still untested.
 - In dry-run the wallet is `dry_run_wallet`, not the account, and an exchange stop is "assumed
   filled" rather than placed. Dry-run proves plumbing and signals; the `stopped` live start
   proves the key, the balance and the stop order.

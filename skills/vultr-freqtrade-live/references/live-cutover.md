@@ -159,3 +159,10 @@ compose down`, an image update, a VPS shutdown) removes the stop until the bot i
 `RUNNING`, and a bot that comes back `stopped` does not re-place it at all. `false` leaves the
 stop on the exchange through a graceful stop; a crash leaves it either way. If a setup does use
 resting limit orders, weigh the two risks explicitly instead of inheriting either default.
+
+Measured on 2026.8 (2026-09-19): with the option still `true`, a `/reload_config` issued while
+holding a position left the exchange stop order untouched — same order id before and after,
+state `RUNNING` → `RELOAD_CONFIG` → `RUNNING` in two seconds, no cancel line in the log. That is
+also the way to apply this (or any) config change to a running bot without recreating the
+container. A full container stop (`down`, SIGTERM) while holding was **not** tested; it runs a
+different shutdown path, so the caution above stands for that case.
